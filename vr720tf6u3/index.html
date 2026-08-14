@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>1pxの謎 第1問「研究室」</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="wrap">
+  <p class="puzzle-number">1pxの謎 第1問</p>
+  <p class="intro">目を覚ますと、見覚えのない研究室にいた。<br>手がかりを探して、ここから出る方法を見つけよう。</p>
+
+  <div class="scene-wrap" id="scene">
+    <img class="scene-img" src="assets/base_scene.png" alt="研究室のワンショット">
+
+    <button class="hotspot" id="hs-papers" data-key="papers" style="left:60%; top:44%; width:37%; height:12%;" aria-label="机の上の書類を調べる">
+      <span class="hotspot-badge" aria-hidden="true"></span>
+    </button>
+    <button class="hotspot" id="hs-whiteboard" data-key="whiteboard" style="left:27%; top:17%; width:42%; height:22%;" aria-label="ホワイトボードを調べる">
+      <span class="hotspot-badge" aria-hidden="true"></span>
+    </button>
+    <button class="hotspot" id="hs-panel" data-key="panel" style="left:71%; top:31%; width:16%; height:8%;" aria-label="実験装置の表示パネルを調べる">
+      <span class="hotspot-badge" aria-hidden="true"></span>
+    </button>
+
+    <div class="dropzone" id="dropzone" style="left:62%; top:68%; width:10%; height:9%;" aria-hidden="true"></div>
+
+    <img class="item" id="item" src="assets/item_wire.png" alt="配線パーツ" style="left:45%; top:87%;" draggable="false" hidden>
+  </div>
+
+  <div class="progress-row">
+    <div class="progress" id="progress" aria-hidden="true">
+      <span class="dot" data-key="papers"></span>
+      <span class="dot" data-key="whiteboard"></span>
+      <span class="dot" data-key="panel"></span>
+    </div>
+    <button type="button" class="hint-link" id="hint-btn">ヒント</button>
+  </div>
+  <p class="hint-text" id="hint-text" role="status"></p>
+
+  <section class="code-section" id="code-section" hidden>
+    <p>3つの手がかりから、4桁のコードを導き出せ。</p>
+    <form id="code-form" autocomplete="off">
+      <input type="text" id="code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="????" aria-label="4桁のコード">
+      <button type="submit">ロック解除</button>
+    </form>
+    <p class="code-feedback" id="code-feedback" role="status"></p>
+  </section>
+
+  <p class="drag-hint" id="drag-hint" hidden>配線パーツを、壁の配電盤まで運んでみよう。</p>
+
+  <div class="clear-screen" id="clear-screen" hidden>
+    <p class="puzzle-number">第1問 クリア</p>
+    <h2>扉の向こうへ。</h2>
+    <p>——けれど、見落とした1pxが、まだどこかに残っている気がする。</p>
+    <a href="https://note.com/" target="_blank" rel="noopener">→ 気になる方はこちら</a>
+  </div>
+</main>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-inner">
+    <button class="modal-close" id="modal-close" aria-label="閉じる">✕</button>
+    <img id="modal-img" src="" alt="手がかり">
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,411 @@
+:root {
+  color-scheme: dark;
+  --bg: #0c1116;
+  --panel: #161d24;
+  --ink: #dbe2e8;
+  --muted: #8a97a3;
+  --accent: #7fb0c9;
+  --accent-warm: #c97f5a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  line-height: 1.7;
+}
+
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 16px 64px;
+}
+
+.puzzle-number {
+  text-align: center;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin: 0 0 6px;
+}
+
+.intro {
+  text-align: center;
+  color: var(--muted);
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+}
+
+.scene-wrap {
+  /* 2026-07-21: モバイルUXレビュー(mobile_ux_review.md)を受け、横長16:9(1408/768)から
+     縦長3:4へ変更。理由は reference/core_requirements.md 5章「画像は縦長構図」を参照。
+     3:4を採用した理由: (1) スマホ画面での占有率を大きく改善しつつ、
+     (2) モーダル表示(.modal-inner img { max-width:92vw; max-height:86vh; })が
+     高さ制限で幅を切り詰められる事態(9:16だと発生しうる)を避けやすく、
+     (3) PC表示(.wrap max-width:760px)でも縦1013px程度に収まり許容範囲。
+     ベースシーンはこの比率で生成する。クロップ画像はモーダル側で自然なアスペクト比のまま
+     表示されるため必ずしも3:4である必要はないが、対象オブジェクトに応じて縦長〜正方形
+     (3:4〜4:5目安)を基本とする。 */
+  aspect-ratio: 3 / 4;
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  background: #000;
+}
+
+.scene-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.hotspot {
+  position: absolute;
+  border: 2px solid transparent;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+/* NOTE: no :hover background here on purpose — マウスを動かすだけで3箇所が
+   わかってしまう「常時ヒント漏れ」バグの原因だった（2026-07-19、02-hinaで発覚）。
+   :focus-visible はキーボード操作時のみ発火するため情報が漏れず、アクセシビリティ用に残す */
+.hotspot:focus-visible {
+  background: rgba(255, 255, 255, 0.05);
+  outline: none;
+}
+
+.hotspot.hint-flash {
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.hotspot-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #08262f;
+  font-size: 13px;
+  font-weight: 700;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.hotspot[data-found="true"] .hotspot-badge {
+  display: flex;
+}
+
+.hotspot[data-found="true"] .hotspot-badge::after {
+  content: "✓";
+}
+
+.dropzone {
+  position: absolute;
+  border: 2px dashed rgba(201, 127, 90, 0.65);
+  border-radius: 8px;
+  display: none;
+  pointer-events: none;
+}
+
+.dropzone.active {
+  display: block;
+}
+
+.dropzone.hover {
+  background: rgba(201, 127, 90, 0.22);
+}
+
+.item {
+  position: absolute;
+  width: 9%;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
+  animation: pop-in 0.4s ease;
+}
+
+.item.dragging {
+  cursor: grabbing;
+  z-index: 20;
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.progress-row {
+  position: relative;
+  margin: 14px 0 6px;
+}
+
+.progress {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2a333c;
+  transition: background 0.3s;
+}
+
+.dot[data-found="true"] {
+  background: var(--accent);
+}
+
+.hint-link {
+  position: absolute;
+  right: 0;
+  top: -2px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-decoration: underline dotted;
+  cursor: pointer;
+  padding: 4px 6px;
+  opacity: 0.7;
+}
+
+.hint-link:hover { opacity: 1; }
+
+.hint-text {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 10px 0 0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: var(--panel);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.3s ease, max-height 0.3s ease;
+}
+
+.hint-text.visible {
+  opacity: 1;
+  max-height: 80px;
+}
+
+/* ---- item-get effect ---- */
+.item-fx {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.fx-glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 34vmin;
+  max-width: 260px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.25);
+  background: radial-gradient(circle, var(--fx-color) 0%, color-mix(in srgb, var(--fx-color) 40%, transparent) 42%, transparent 72%);
+  opacity: 0;
+  filter: blur(1.5px);
+  animation: fx-glow-anim 0.95s ease-out forwards;
+}
+
+@keyframes fx-glow-anim {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+  28% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.7); }
+}
+
+.fx-ray {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 15vmin;
+  max-height: 110px;
+  background: linear-gradient(to top, var(--fx-color), transparent);
+  opacity: 0;
+  transform-origin: 50% 100%;
+  animation: fx-ray-anim 0.75s ease-out forwards;
+}
+
+@keyframes fx-ray-anim {
+  0% { opacity: 0; transform: translate(-50%, -100%) rotate(var(--r, 0deg)) scaleY(0.25); }
+  30% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(-50%, -100%) rotate(var(--r, 0deg)) scaleY(1.3); }
+}
+
+.fx-spark {
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fx-color);
+  box-shadow: 0 0 6px 1px var(--fx-color);
+  opacity: 0;
+  animation: fx-spark-anim 0.85s ease-out forwards;
+}
+
+@keyframes fx-spark-anim {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.8); }
+}
+
+.code-section {
+  margin-top: 28px;
+  text-align: center;
+}
+
+.code-section p {
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+#code-form {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* 幅はmin-width+paddingで可変。答えの文字数がかなり多い場合はサイト側で#code-inputに
+   widthを個別指定して上書きしてよい */
+#code-input {
+  min-width: 130px;
+  width: auto;
+  font-size: 1.4rem;
+  letter-spacing: 0.3em;
+  text-align: center;
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: 1px solid #2a333c;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+#code-form button {
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: #08262f;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#code-form button:hover { filter: brightness(1.08); }
+
+.code-feedback {
+  min-height: 1.4em;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.code-feedback.error { color: #d98a7a; }
+.code-feedback.ok { color: var(--accent); }
+
+.shake { animation: shake 0.32s; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.drag-hint {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 18px;
+}
+
+.clear-screen {
+  text-align: center;
+  margin-top: 32px;
+  padding: 28px 20px;
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.clear-screen h2 {
+  margin: 0 0 10px;
+  color: var(--accent);
+}
+
+.clear-screen a {
+  display: inline-block;
+  margin-top: 14px;
+  color: #08262f;
+  background: var(--accent);
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 9, 0.86);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+
+.modal[hidden] { display: none; }
+
+.modal-inner {
+  position: relative;
+  max-width: 92vw;
+  max-height: 86vh;
+}
+
+.modal-inner img {
+  max-width: 92vw;
+  max-height: 86vh;
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  display: block;
+}
+
+.modal-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 16px;
+  cursor: pointer;
+}
