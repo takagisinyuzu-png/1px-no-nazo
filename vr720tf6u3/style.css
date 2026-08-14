@@ -133,7 +133,9 @@ body {
 
 .item {
   position: absolute;
-  width: 9%;
+  /* 2026-08-14: モバイル実機レビューでアイコンが小さすぎるとの指摘。最小48pxを保証しつつ
+     広い画面では自然な比率(15%)でスケールする */
+  width: clamp(48px, 15%, 100px);
   transform: translate(-50%, -50%);
   cursor: grab;
   touch-action: none;
